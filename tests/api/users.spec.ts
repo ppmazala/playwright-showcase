@@ -41,8 +41,10 @@ test.describe('Users API', () => {
   });
 
   test.describe('PUT /users/:id', () => {
-    test('updates a newly created user', async ({ request }) => {
-      const { id } = await request.post(ENDPOINTS.USERS, { data: NEW_USER }).then(r => r.json());
+    test('updates an existing user', async ({ request }) => {
+      const users = await request.get(ENDPOINTS.USERS).then(r => r.json());
+      expect(users.length).toBeGreaterThan(0);
+      const { id } = users[0];
 
       const response = await request.put(`${ENDPOINTS.USERS}/${id}`, { data: UPDATED_USER });
       expect(response.ok()).toBe(true);
@@ -53,8 +55,10 @@ test.describe('Users API', () => {
   });
 
   test.describe('DELETE /users/:id', () => {
-    test('deletes a newly created user', async ({ request }) => {
-      const { id } = await request.post(ENDPOINTS.USERS, { data: NEW_USER }).then(r => r.json());
+    test('deletes an existing user', async ({ request }) => {
+      const users = await request.get(ENDPOINTS.USERS).then(r => r.json());
+      expect(users.length).toBeGreaterThan(0);
+      const { id } = users[0];
 
       const response = await request.delete(`${ENDPOINTS.USERS}/${id}`);
       expect(response.ok()).toBe(true);
