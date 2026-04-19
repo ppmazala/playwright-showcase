@@ -1,28 +1,54 @@
-import { test, expect } from '@playwright/test';
-import { InventoryPage } from '../../pages/InventoryPage';
+import { test, expect } from '../fixtures';
+
+type SortType = 'az' | 'za' | 'lohi' | 'hilo';
+
+const stringSortCases = [
+  { option: 'az' as SortType, label: 'Name (A to Z)', descending: false },
+  { option: 'za' as SortType, label: 'Name (Z to A)', descending: true },
+];
+
+const priceSortCases = [
+  { option: 'lohi' as SortType, label: 'Price (Low to High)', descending: false },
+  { option: 'hilo' as SortType, label: 'Price (High to Low)', descending: true },
+];
 
 test.describe('Product Sorting Tests', () => {
-  
-  test('Validate sorting items by name Z-A', async ({ page }) => {
-    const inventoryPage = new InventoryPage(page);
-    
-    // Navigate to inventory page (already authenticated via fixture)
-    await page.goto('/inventory.html');
-    
-    // Verify we're on inventory page
-    await expect(page).toHaveURL(/.*inventory.html/);
-    await expect(inventoryPage.getPageHeadingLocator()).toHaveText('Products');
-    
-    // Sort by name Z-A
-    await inventoryPage.sortBy('za');
-    
-    // Get all product names after sorting
-    const productNames = await inventoryPage.getAllProductNames();
-    
-    // Create a sorted copy to compare
-    const expectedOrder = [...productNames].sort((a, b) => b.localeCompare(a));
-    
-    // Verify the order matches Z-A sorting
-    expect(productNames).toEqual(expectedOrder);
+  test.beforeEach(async ({ inventoryPage }) => {
+    await inventoryPage.goto();
+    await expect(inventoryPage.heading).toHaveText('Products');
+  });
+
+  test.describe('Alphabetical Sorting', () => {
+    for (const { option, label, descending } of stringSortCases) {
+      test(`sorts correctly by ${label}`, async ({ inventoryPage }) => {
+        await inventoryPage.sortBy(option);
+
+        const names = await inventoryPage.getAllProductNames();
+        expect(names.length).toBeGreaterThan(0);
+
+        const expectedOrder = [...names].sort((a, b) =>
+          descending ? b.localeCompare(a) : a.localeCompare(b)
+        );
+
+        expect(names).toEqual(expectedOrder);
+      });
+    }
+  });
+
+  test.describe('Price Sorting', () => {
+    for (const { option, label, descending } of priceSortCases) {
+      test(`sorts correctly by ${label}`, async ({ inventoryPage }) => {
+        await inventoryPage.sortBy(option);
+
+        const prices = await inventoryPage.getAllProductPrices();
+        expect(prices.length).toBeGreaterThan(0);
+
+        const expectedOrder = [...prices].sort((a, b) =>
+          descending ? b - a : a - b
+        );
+
+        expect(prices).toEqual(expectedOrder);
+      });
+    }
   });
 });

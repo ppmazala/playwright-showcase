@@ -22,10 +22,10 @@ jobs:
     
     - uses: actions/setup-node@v4
       with:
-        node-version: 18
-    
+        node-version: 20
+
     - name: Install dependencies
-      run: npm install
+      run: npm ci
     
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
@@ -35,10 +35,9 @@ jobs:
       env:
         UI_BASE_URL: https://www.saucedemo.com
         API_BASE_URL: https://jsonplaceholder.typicode.com
-        STANDARD_USER: ${{ secrets.TEST_USERNAME }}
-        PASSWORD: ${{ secrets.TEST_PASSWORD }}
+        STANDARD_USER: ${{ secrets.STANDARD_USER }}
+        PASSWORD: ${{ secrets.PASSWORD }}
         HEADLESS: true
-        BROWSER: chromium
         WORKERS: 4
         TIMEOUT: 30000
         ACTION_TIMEOUT: 10000
@@ -54,7 +53,7 @@ jobs:
 
   deploy:
     needs: test
-    if: always()
+    if: success() && github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
     
     environment:

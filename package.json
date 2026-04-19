@@ -1,23 +1,39 @@
 {
-  "name": "playwright-assessment",
+  "name": "playwright-showcase",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "scripts": {},
+  "scripts": {
+    "test": "playwright test",
+    "test:ui": "playwright test --project=chromium",
+    "test:api": "playwright test --project=api",
+    "test:debug": "playwright test --debug",
+    "test:report": "playwright show-report",
+    "lint": "eslint tests/ pages/ types/ --ext .ts",
+    "format": "prettier --write \"**/*.{ts,json,md}\""
+  },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/coderspace-lab/playwright-assessment.git"
+    "url": "git+https://github.com/ppmazala/playwright-showcase.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/coderspace-lab/playwright-assessment/issues"
+    "url": "https://github.com/ppmazala/playwright-showcase/issues"
   },
-  "homepage": "https://github.com/coderspace-lab/playwright-assessment#readme",
+  "homepage": "https://github.com/ppmazala/playwright-showcase#readme",
   "devDependencies": {
     "@playwright/test": "^1.57.0",
     "@types/node": "^25.0.9",
-    "dotenv": "^17.2.3"
+    "@typescript-eslint/eslint-plugin": "^8.58.2",
+    "@typescript-eslint/parser": "^8.58.2",
+    "dotenv": "^17.2.3",
+    "eslint": "^10.2.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-playwright": "^2.10.1"
+  },
+  "dependencies": {
+    "zod": "^4.3.6"
   }
 }

@@ -1,123 +1,58 @@
-import { Page, Locator } from '@playwright/test';
+import { Locator } from '@playwright/test';
 import { BasePage } from './BasePage';
 
-export class CheckoutPage extends BasePage {
-  // Step 1: Customer Information
-  private readonly firstNameInput: Locator;
-  private readonly lastNameInput: Locator;
-  private readonly postalCodeInput: Locator;
-  private readonly continueButton: Locator;
-  
-  // Step 2: Order Overview
-  private readonly subtotalLabel: Locator;
-  private readonly taxLabel: Locator;
-  private readonly totalLabel: Locator;
-  private readonly finishButton: Locator;
-  
-  // Step 3: Complete
-  private readonly completeHeader: Locator;
-  private readonly completeText: Locator;
-  
-  // Common
-  private readonly pageHeading: Locator;
+export type CustomerInfo = {
+  firstName: string;
+  lastName: string;
+  postalCode: string;
+};
 
-  constructor(page: Page) {
-    super(page);
-    // Step 1 locators
-    this.firstNameInput = page.locator('[data-test="firstName"]');
-    this.lastNameInput = page.locator('[data-test="lastName"]');
-    this.postalCodeInput = page.locator('[data-test="postalCode"]');
-    this.continueButton = page.locator('[data-test="continue"]');
+export class CheckoutPage extends BasePage {
+  readonly heading: Locator = this.page.getByTestId('title');
+  readonly completeHeader: Locator = this.page.getByTestId('complete-header');
+  readonly completeText: Locator = this.page.getByTestId('complete-text');
+  readonly errorMessage: Locator = this.page.getByTestId('error');
+
+  private readonly firstNameInput: Locator = this.page.getByTestId('firstName');
+  private readonly lastNameInput: Locator = this.page.getByTestId('lastName');
+  private readonly postalCodeInput: Locator = this.page.getByTestId('postalCode');
+  private readonly continueButton: Locator = this.page.getByTestId('continue');
+  private readonly finishButton: Locator = this.page.getByTestId('finish');
+  private readonly subtotalLabel: Locator = this.page.getByTestId('subtotal-label');
+  private readonly taxLabel: Locator = this.page.getByTestId('tax-label');
+  private readonly totalLabel: Locator = this.page.getByTestId('total-label');
+
+  private async parseAmount(locator: Locator): Promise<number> {
+    const text = await locator.textContent();
+    const match = text?.replace(/,/g, '').match(/[\d]+\.?\d*/);
     
-    // Step 2 locators
-    this.subtotalLabel = page.locator('[data-test="subtotal-label"]');
-    this.taxLabel = page.locator('[data-test="tax-label"]');
-    this.totalLabel = page.locator('[data-test="total-label"]');
-    this.finishButton = page.locator('[data-test="finish"]');
+    if (!match) {
+      throw new Error(`Failed to parse valid currency amount from text: "${text}"`);
+    }
     
-    // Step 3 locators
-    this.completeHeader = page.locator('[data-test="complete-header"]');
-    this.completeText = page.locator('[data-test="complete-text"]');
-    
-    // Common
-    this.pageHeading = page.locator('[data-test="title"]');
+    return parseFloat(match[0]);
   }
 
-  /**
-   * Fill in customer information (Step 1)
-   */
-  async fillCustomerInfo(
-    firstName: string,
-    lastName: string,
-    postalCode: string
-  ): Promise<void> {
+  async submitCustomerInfo({ firstName, lastName, postalCode }: CustomerInfo): Promise<void> {
     await this.firstNameInput.fill(firstName);
     await this.lastNameInput.fill(lastName);
     await this.postalCodeInput.fill(postalCode);
-  }
-
-  /**
-   * Click continue to proceed to overview (Step 1 → Step 2)
-   */
-  async clickContinue(): Promise<void> {
     await this.continueButton.click();
   }
 
-  /**
-   * Get subtotal amount (Step 2)
-   */
-  async getSubtotal(): Promise<number> {
-    const text = await this.subtotalLabel.textContent();
-    // Format: "Item total: $39.98"
-    const match = text?.match(/\$(\d+\.?\d*)/);
-    return match ? parseFloat(match[1]) : 0;
-  }
-
-  /**
-   * Get tax amount (Step 2)
-   */
-  async getTax(): Promise<number> {
-    const text = await this.taxLabel.textContent();
-    // Format: "Tax: $3.20"
-    const match = text?.match(/\$(\d+\.?\d*)/);
-    return match ? parseFloat(match[1]) : 0;
-  }
-
-  /**
-   * Get total amount (Step 2)
-   */
-  async getTotal(): Promise<number> {
-    const text = await this.totalLabel.textContent();
-    // Format: "Total: $43.18"
-    const match = text?.match(/\$(\d+\.?\d*)/);
-    return match ? parseFloat(match[1]) : 0;
-  }
-
-  /**
-   * Click finish to complete order (Step 2 → Step 3)
-   */
-  async clickFinish(): Promise<void> {
+  async finishOrder(): Promise<void> {
     await this.finishButton.click();
   }
 
-  /**
-   * Get page heading locator (for assertions)
-   */
-  getPageHeadingLocator(): Locator {
-    return this.pageHeading;
+  async getSubtotal(): Promise<number> {
+    return this.parseAmount(this.subtotalLabel);
   }
 
-  /**
-   * Get complete header locator (for assertions)
-   */
-  getCompleteHeaderLocator(): Locator {
-    return this.completeHeader;
+  async getTax(): Promise<number> {
+    return this.parseAmount(this.taxLabel);
   }
 
-  /**
-   * Get complete text locator (for assertions)
-   */
-  getCompleteTextLocator(): Locator {
-    return this.completeText;
+  async getTotal(): Promise<number> {
+    return this.parseAmount(this.totalLabel);
   }
 }

@@ -1,7 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
 import dotenv from 'dotenv';
 
-// Load environment variables
 dotenv.config();
 
 export default defineConfig({
@@ -25,6 +24,7 @@ export default defineConfig({
   
   use: {
     baseURL: process.env.UI_BASE_URL,
+    testIdAttribute: 'data-test',
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
@@ -33,20 +33,24 @@ export default defineConfig({
   },
 
   projects: [
-    // Setup project - runs first to authenticate
     {
       name: 'setup',
       testMatch: '**/auth.setup.ts',
     },
-    
-    // Chromium with authentication
     {
       name: 'chromium',
-      use: { 
+      use: {
         ...devices['Desktop Chrome'],
         storageState: '.auth/user.json',
       },
       dependencies: ['setup'],
+    },
+    {
+      name: 'api',
+      testDir: './tests/api',
+      use: {
+        baseURL: process.env.API_BASE_URL,
+      },
     },
   ],
 });

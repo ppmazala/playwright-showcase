@@ -1,19 +1,34 @@
-import { test, expect } from '@playwright/test';
-import { LoginPage } from '../../pages/LoginPage';
+import { test, expect } from '../fixtures';
+import { VALID_USER, REQUIRED_FIELDS, BUSINESS_LOGIC_CASES } from '../data/login.data';
+import { UserCredentials } from '../../pages/LoginPage';
 
-
-// Override to NOT use authenticated state - start fresh
 test.use({ storageState: { cookies: [], origins: [] } });
 
-test.describe('Login Tests', () => {
-  
-  test('Validate failed login with invalid credentials', async ({ page }) => {
-    const loginPage = new LoginPage(page);
+test.describe('Login', () => {
+  test.beforeEach(async ({ loginPage }) => {
     await loginPage.goto();
-    
-    await loginPage.login('invalid_user', 'wrong_password');
-    
-    const errorText = await loginPage.getErrorMessage();
-    expect(errorText).toContain('Epic sadface: Username and password do not match');
+  });
+
+  test('redirects to inventory on valid credentials', async ({ page, loginPage }) => {
+    await loginPage.login(VALID_USER);
+    await expect(page).toHaveURL('/inventory.html');
+  });
+
+  test.describe('Business logic errors', () => {
+    for (const { description, credentials, expectedError } of BUSINESS_LOGIC_CASES) {
+      test(`shows error for ${description}`, async ({ loginPage }) => {
+        await loginPage.login(credentials);
+        expect(await loginPage.getErrorMessage()).toBe(expectedError);
+      });
+    }
+  });
+
+  test.describe('Form validation', () => {
+    for (const { key, label } of REQUIRED_FIELDS) {
+      test(`shows error when ${label} is missing`, async ({ loginPage }) => {
+        await loginPage.login({ ...VALID_USER, [key]: '' } as UserCredentials);
+        expect(await loginPage.getErrorMessage()).toBe(`Epic sadface: ${label} is required`);
+      });
+    }
   });
 });

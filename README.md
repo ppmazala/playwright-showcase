@@ -1,54 +1,54 @@
-# playwright-assessment
+# playwright-showcase
 End-to-end test automation for SauceDemo and JSONPlaceholder API using Playwright with TypeScript.
 
 ## Installation
 ```bash
-# Install dependencies
 npm install
-
-# Install Playwright browsers
 npx playwright install --with-deps
 ```
 
 ## Environment Setup
 
-Create a `.env` file in the root directory:
+Copy `.env.example` to `.env` and fill in your values:
 ```bash
-# UI Testing
-UI_BASE_URL=https://www.saucedemo.com
-STANDARD_USER=your_username_here
-PASSWORD=your_password_here
-
-# API Testing
-API_BASE_URL=https://jsonplaceholder.typicode.com
+cp .env.example .env
 ```
 
 ## Running Tests
 ```bash
 # Run all tests
-npx playwright test
+npm test
 
 # Run UI tests only
-npx playwright test tests/ui/
+npm run test:ui
 
 # Run API tests only
-npx playwright test tests/api/
+npm run test:api
 
 # Run specific test file
 npx playwright test tests/ui/checkout.spec.ts
 
-# Run with UI (headed mode)
-npx playwright test --headed
-
 # Debug mode
-npx playwright test --debug
+npm run test:debug
 ```
+
 ## Test Reports
 ```bash
-# View HTML report after test run
-npx playwright show-report
+npm run test:report
 ```
-**Latest Test Report in CI/CD:** [View Report](https://coderspace-lab.github.io/playwright-assessment/)
+**Latest Test Report:** [View Report](https://ppmazala.github.io/playwright-showcase/)
+
+## Linting
+```bash
+# Check for lint errors
+npm run lint
+
+# Auto-fix where possible
+npm run lint -- --fix
+
+# Format code
+npm run format
+```
 
 ## CI/CD
 
@@ -60,4 +60,4 @@ Pipeline includes:
 - Dependency installation
 - Browser setup
 - Test execution
-- Report artifact upload
+- Report published to GitHub Pages

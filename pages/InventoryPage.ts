@@ -1,65 +1,42 @@
-import { Page, Locator } from '@playwright/test';
+import { Locator } from '@playwright/test';
 import { BasePage } from './BasePage';
 
 export class InventoryPage extends BasePage {
-  // Locators
-  private readonly inventoryItems: Locator;
-  private readonly itemNames: Locator;
-  private readonly cartBadge: Locator;
-  private readonly cartLink: Locator;
-  private readonly pageHeading: Locator;
-  private readonly sortDropdown: Locator;
+  readonly cartBadge: Locator = this.page.getByTestId('shopping-cart-badge');
+  readonly heading: Locator = this.page.getByTestId('title');
 
-  constructor(page: Page) {
-    super(page);
-    this.inventoryItems = page.locator('[data-test="inventory-item"]');
-    this.itemNames = page.locator('[data-test="inventory-item-name"]');
-    this.cartBadge = page.locator('[data-test="shopping-cart-badge"]');
-    this.cartLink = page.locator('[data-test="shopping-cart-link"]');
-    this.pageHeading = page.locator('[data-test="title"]');
-    this.sortDropdown = page.locator('[data-test="product-sort-container"]');
+  private readonly inventoryItems: Locator = this.page.getByTestId('inventory-item');
+  private readonly itemNames: Locator = this.page.getByTestId('inventory-item-name');
+  private readonly itemPrices: Locator = this.page.getByTestId('inventory-item-price');
+  private readonly cartLink: Locator = this.page.getByTestId('shopping-cart-link');
+  private readonly sortDropdown: Locator = this.page.getByTestId('product-sort-container');
+
+  async goto(): Promise<void> {
+    await this.page.goto('/inventory.html');
   }
 
-  /**
-   * Add product to cart by product name
-   */
+  private addToCartButton(productName: string): Locator {
+    return this.inventoryItems.filter({ hasText: productName }).getByTestId(/^add-to-cart/);
+  }
+
   async addProductToCart(productName: string): Promise<void> {
-    const product = this.inventoryItems.filter({ hasText: productName });
-    await product.locator('button').first().click();
+    await this.addToCartButton(productName).click();
   }
 
-  /**
-   * Click shopping cart to navigate to cart page
-   */
   async goToCart(): Promise<void> {
     await this.cartLink.click();
   }
 
-  /**
-   * Sort products by option
-   */
   async sortBy(option: 'az' | 'za' | 'lohi' | 'hilo'): Promise<void> {
     await this.sortDropdown.selectOption(option);
   }
 
-  /**
-   * Get all product names in current order
-   */
   async getAllProductNames(): Promise<string[]> {
     return await this.itemNames.allTextContents();
   }
 
-  /**
-   * Get page heading locator (for assertions in tests)
-   */
-  getPageHeadingLocator(): Locator {
-    return this.pageHeading;
-  }
-
-  /**
-   * Get cart badge locator (for assertions in tests)
-   */
-  getCartBadgeLocator(): Locator {
-    return this.cartBadge;
+  async getAllProductPrices(): Promise<number[]> {
+    const texts = await this.itemPrices.allTextContents();
+    return texts.map(t => parseFloat(t.replace('$', '')) || 0);
   }
 }
