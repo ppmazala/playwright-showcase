@@ -9,7 +9,8 @@ node_modules/
 /playwright/.auth/
 .env
 .auth/
-.claude
+.claude/*
+!.claude/commands/
 tests/.DS_Store
 .DS_Store
 .playwright-mcp/
