@@ -1,8 +1,8 @@
 import { test, expect } from '../fixtures';
 import { CustomerInfo } from '../../pages/CheckoutPage';
+import { VALID_CUSTOMER } from '../data/checkout.data';
 
 const CART_ITEMS = ['Sauce Labs Backpack', 'Sauce Labs Bike Light'] as const;
-const VALID_CUSTOMER: CustomerInfo = { firstName: 'John', lastName: 'Doe', postalCode: '12345' };
 
 const REQUIRED_FIELDS = [
   { key: 'firstName', label: 'First Name' },

@@ -1,4 +1,4 @@
-import { Locator } from '@playwright/test';
+import { Locator, test } from '@playwright/test';
 import { BasePage } from './BasePage';
 
 export class InventoryPage extends BasePage {
@@ -12,7 +12,9 @@ export class InventoryPage extends BasePage {
   private readonly sortDropdown: Locator = this.page.getByTestId('product-sort-container');
 
   async goto(): Promise<void> {
-    await this.page.goto('/inventory.html');
+    await test.step('Navigate to inventory page', async () => {
+      await this.page.goto('/inventory.html');
+    });
   }
 
   private addToCartButton(productName: string): Locator {
@@ -20,23 +22,31 @@ export class InventoryPage extends BasePage {
   }
 
   async addProductToCart(productName: string): Promise<void> {
-    await this.addToCartButton(productName).click();
+    await test.step(`Add "${productName}" to cart`, async () => {
+      await this.addToCartButton(productName).click();
+    });
   }
 
   async goToCart(): Promise<void> {
-    await this.cartLink.click();
+    await test.step('Go to cart', async () => {
+      await this.cartLink.click();
+    });
   }
 
   async sortBy(option: 'az' | 'za' | 'lohi' | 'hilo'): Promise<void> {
-    await this.sortDropdown.selectOption(option);
+    await test.step(`Sort products by "${option}"`, async () => {
+      await this.sortDropdown.selectOption(option);
+    });
   }
 
   async getAllProductNames(): Promise<string[]> {
-    return await this.itemNames.allTextContents();
+    return test.step('Get all product names', () => this.itemNames.allTextContents());
   }
 
   async getAllProductPrices(): Promise<number[]> {
-    const texts = await this.itemPrices.allTextContents();
-    return texts.map(t => parseFloat(t.replace('$', '')) || 0);
+    return test.step('Get all product prices', async () => {
+      const texts = await this.itemPrices.allTextContents();
+      return texts.map(t => parseFloat(t.replace('$', '')) || 0);
+    });
   }
 }

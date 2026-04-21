@@ -1,4 +1,4 @@
-import { Locator } from '@playwright/test';
+import { Locator, test } from '@playwright/test';
 import { BasePage } from './BasePage';
 
 export class CartPage extends BasePage {
@@ -10,28 +10,36 @@ export class CartPage extends BasePage {
   private readonly checkoutButton: Locator = this.page.getByTestId('checkout');
 
   async goto(): Promise<void> {
-    await this.page.goto('/cart.html');
+    await test.step('Navigate to cart', async () => {
+      await this.page.goto('/cart.html');
+    });
   }
 
   async getCartItemNames(): Promise<string[]> {
-    return await this.itemNames.allTextContents();
+    return test.step('Get cart item names', () => this.itemNames.allTextContents());
   }
 
   async getAllProductPrices(): Promise<number[]> {
-    const priceTexts = await this.itemPrices.allTextContents();
-    return priceTexts.map(text => parseFloat(text.replace('$', '')) || 0);
+    return test.step('Get cart item prices', async () => {
+      const priceTexts = await this.itemPrices.allTextContents();
+      return priceTexts.map(text => parseFloat(text.replace('$', '')) || 0);
+    });
   }
 
   async calculateSubtotal(): Promise<number> {
-    const prices = await this.getAllProductPrices();
-    return prices.reduce((sum, price) => sum + price, 0);
+    return test.step('Calculate cart subtotal', async () => {
+      const prices = await this.getAllProductPrices();
+      return prices.reduce((sum, price) => sum + price, 0);
+    });
   }
 
   async proceedToCheckout(): Promise<void> {
-    await this.checkoutButton.click();
+    await test.step('Proceed to checkout', async () => {
+      await this.checkoutButton.click();
+    });
   }
 
   async getCartItemsCount(): Promise<number> {
-    return await this.cartItems.count();
+    return test.step('Get cart items count', () => this.cartItems.count());
   }
 }

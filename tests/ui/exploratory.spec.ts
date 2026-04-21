@@ -1,10 +1,10 @@
 import { test, expect } from '../fixtures';
+import { ERROR_USER } from '../data/login.data';
+import { VALID_CUSTOMER } from '../data/checkout.data';
 
 // error_user has real defects that block checkout — these specs lock them into CI.
 // A test.fail() that starts passing is a signal the bug was fixed.
 test.use({ storageState: { cookies: [], origins: [] } });
-
-const ERROR_USER = { username: 'error_user', password: 'secret_sauce' };
 
 test.describe('error_user defects', () => {
   test.beforeEach(async ({ loginPage, inventoryPage }) => {
@@ -13,20 +13,21 @@ test.describe('error_user defects', () => {
     await inventoryPage.addProductToCart('Sauce Labs Backpack');
   });
 
-  test.fail('BUG-3: Last name field does not retain typed input on checkout form', async ({ cartPage, page }) => {
+  test.fail('BUG-1: Last name field does not retain typed input on checkout form', async ({ cartPage, checkoutPage }) => {
     await cartPage.goto();
     await cartPage.proceedToCheckout();
 
-    await page.getByTestId('lastName').fill('Doe');
+    await checkoutPage.fillLastName(VALID_CUSTOMER.lastName);
 
-    await expect(page.getByTestId('lastName')).toHaveValue('Doe');
+    expect(await checkoutPage.getLastNameValue()).toBe(VALID_CUSTOMER.lastName);
   });
 
-  test.fail('BUG-4: Checkout cannot proceed past step 1 due to broken last name field', async ({ cartPage, checkoutPage, page }) => {
+  // BUG-2 was fixed: error_user can now proceed past checkout step 1
+  test('BUG-2 (fixed): Checkout proceeds past step 1', async ({ cartPage, checkoutPage, page }) => {
     await cartPage.goto();
     await cartPage.proceedToCheckout();
 
-    await checkoutPage.submitCustomerInfo({ firstName: 'John', lastName: 'Doe', postalCode: '12345' });
+    await checkoutPage.submitCustomerInfo(VALID_CUSTOMER);
 
     await expect(page).toHaveURL(/checkout-step-two/);
   });

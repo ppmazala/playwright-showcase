@@ -5,6 +5,11 @@ export const VALID_USER: UserCredentials = {
   password: process.env.PASSWORD ?? 'secret_sauce',
 };
 
+export const ERROR_USER: UserCredentials = {
+  username: 'error_user',
+  password: process.env.PASSWORD ?? 'secret_sauce',
+};
+
 export const REQUIRED_FIELDS = [
   { key: 'username', label: 'Username' },
   { key: 'password', label: 'Password' },

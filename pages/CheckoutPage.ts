@@ -1,4 +1,4 @@
-import { Locator } from '@playwright/test';
+import { Locator, test } from '@playwright/test';
 import { BasePage } from './BasePage';
 
 export type CustomerInfo = {
@@ -25,34 +25,48 @@ export class CheckoutPage extends BasePage {
   private async parseAmount(locator: Locator): Promise<number> {
     const text = await locator.textContent();
     const match = text?.replace(/,/g, '').match(/[\d]+\.?\d*/);
-    
+
     if (!match) {
       throw new Error(`Failed to parse valid currency amount from text: "${text}"`);
     }
-    
+
     return parseFloat(match[0]);
   }
 
+  async fillLastName(value: string): Promise<void> {
+    await test.step(`Fill last name with "${value}"`, async () => {
+      await this.lastNameInput.fill(value);
+    });
+  }
+
+  async getLastNameValue(): Promise<string> {
+    return test.step('Get last name field value', () => this.lastNameInput.inputValue());
+  }
+
   async submitCustomerInfo({ firstName, lastName, postalCode }: CustomerInfo): Promise<void> {
-    await this.firstNameInput.fill(firstName);
-    await this.lastNameInput.fill(lastName);
-    await this.postalCodeInput.fill(postalCode);
-    await this.continueButton.click();
+    await test.step(`Fill checkout form (${firstName} ${lastName}, ${postalCode})`, async () => {
+      await this.firstNameInput.fill(firstName);
+      await this.lastNameInput.fill(lastName);
+      await this.postalCodeInput.fill(postalCode);
+      await this.continueButton.click();
+    });
   }
 
   async finishOrder(): Promise<void> {
-    await this.finishButton.click();
+    await test.step('Finish order', async () => {
+      await this.finishButton.click();
+    });
   }
 
   async getSubtotal(): Promise<number> {
-    return this.parseAmount(this.subtotalLabel);
+    return test.step('Get subtotal', () => this.parseAmount(this.subtotalLabel));
   }
 
   async getTax(): Promise<number> {
-    return this.parseAmount(this.taxLabel);
+    return test.step('Get tax', () => this.parseAmount(this.taxLabel));
   }
 
   async getTotal(): Promise<number> {
-    return this.parseAmount(this.totalLabel);
+    return test.step('Get total', () => this.parseAmount(this.totalLabel));
   }
 }

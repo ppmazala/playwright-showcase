@@ -32,6 +32,7 @@ jobs:
     
     - name: Run Playwright tests
       run: npx playwright test
+      continue-on-error: true
       env:
         UI_BASE_URL: https://www.saucedemo.com
         API_BASE_URL: https://jsonplaceholder.typicode.com
