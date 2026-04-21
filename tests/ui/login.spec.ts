@@ -11,14 +11,18 @@ test.describe('Login', () => {
 
   test('redirects to inventory on valid credentials', async ({ page, loginPage }) => {
     await loginPage.login(VALID_USER);
-    await expect(page).toHaveURL('/inventory.html');
+    await test.step('Redirects to inventory page', async () => {
+      await expect(page).toHaveURL('/inventory.html');
+    });
   });
 
   test.describe('Business logic errors', () => {
     for (const { description, credentials, expectedError } of BUSINESS_LOGIC_CASES) {
       test(`shows error for ${description}`, async ({ loginPage }) => {
         await loginPage.login(credentials);
-        expect(await loginPage.getErrorMessage()).toBe(expectedError);
+        await test.step(`Shows error: '${expectedError}'`, async () => {
+          expect(await loginPage.getErrorMessage()).toBe(expectedError);
+        });
       });
     }
   });
@@ -27,7 +31,9 @@ test.describe('Login', () => {
     for (const { key, label } of REQUIRED_FIELDS) {
       test(`shows error when ${label} is missing`, async ({ loginPage }) => {
         await loginPage.login({ ...VALID_USER, [key]: '' } as UserCredentials);
-        expect(await loginPage.getErrorMessage()).toBe(`Epic sadface: ${label} is required`);
+        await test.step(`Shows error: '${label} is required'`, async () => {
+          expect(await loginPage.getErrorMessage()).toBe(`Epic sadface: ${label} is required`);
+        });
       });
     }
   });

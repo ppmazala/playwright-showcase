@@ -15,7 +15,9 @@ const priceSortCases = [
 test.describe('Product Sorting Tests', () => {
   test.beforeEach(async ({ inventoryPage }) => {
     await inventoryPage.goto();
-    await expect(inventoryPage.heading).toHaveText('Products');
+    await test.step('Inventory page is loaded', async () => {
+      await expect(inventoryPage.heading).toHaveText('Products');
+    });
   });
 
   test.describe('Alphabetical Sorting', () => {
@@ -24,13 +26,18 @@ test.describe('Product Sorting Tests', () => {
         await inventoryPage.sortBy(option);
 
         const names = await inventoryPage.getAllProductNames();
-        expect(names.length).toBeGreaterThan(0);
+
+        await test.step('Products are listed', async () => {
+          expect(names.length).toBeGreaterThan(0);
+        });
 
         const expectedOrder = [...names].sort((a, b) =>
           descending ? b.localeCompare(a) : a.localeCompare(b)
         );
 
-        expect(names).toEqual(expectedOrder);
+        await test.step(`Products are sorted by ${label}`, async () => {
+          expect(names).toEqual(expectedOrder);
+        });
       });
     }
   });
@@ -41,13 +48,18 @@ test.describe('Product Sorting Tests', () => {
         await inventoryPage.sortBy(option);
 
         const prices = await inventoryPage.getAllProductPrices();
-        expect(prices.length).toBeGreaterThan(0);
+
+        await test.step('Products are listed', async () => {
+          expect(prices.length).toBeGreaterThan(0);
+        });
 
         const expectedOrder = [...prices].sort((a, b) =>
           descending ? b - a : a - b
         );
 
-        expect(prices).toEqual(expectedOrder);
+        await test.step(`Products are sorted by ${label}`, async () => {
+          expect(prices).toEqual(expectedOrder);
+        });
       });
     }
   });

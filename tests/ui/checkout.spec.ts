@@ -24,12 +24,21 @@ test.describe('Checkout Processing', () => {
     });
 
     test('displays correct items in cart and cart badge', async ({ inventoryPage, cartPage }) => {
-      await expect(inventoryPage.cartBadge).toHaveText(String(CART_ITEMS.length));
-      await expect(cartPage.heading).toHaveText('Your Cart');
+      await test.step(`Cart badge shows ${CART_ITEMS.length} items`, async () => {
+        await expect(inventoryPage.cartBadge).toHaveText(String(CART_ITEMS.length));
+      });
+      await test.step("Page heading is 'Your Cart'", async () => {
+        await expect(cartPage.heading).toHaveText('Your Cart');
+      });
 
       const itemNames = await cartPage.getCartItemNames();
-      expect(itemNames).toEqual(expect.arrayContaining([...CART_ITEMS]));
-      expect(itemNames).toHaveLength(CART_ITEMS.length);
+
+      await test.step('Cart contains all added items', async () => {
+        expect(itemNames).toEqual(expect.arrayContaining([...CART_ITEMS]));
+      });
+      await test.step('Cart has correct number of items', async () => {
+        expect(itemNames).toHaveLength(CART_ITEMS.length);
+      });
     });
   });
 
@@ -38,23 +47,29 @@ test.describe('Checkout Processing', () => {
 
     test.beforeEach(async ({ cartPage, checkoutPage }) => {
       await cartPage.goto();
-      // Capture state before transitioning to verify it carries over correctly
       cartSubtotal = await cartPage.calculateSubtotal();
-      
       await cartPage.proceedToCheckout();
       await checkoutPage.submitCustomerInfo(VALID_CUSTOMER);
     });
 
     test('calculates correct subtotal, tax, and total based on cart contents', async ({ checkoutPage }) => {
-      await expect(checkoutPage.heading).toHaveText('Checkout: Overview');
+      await test.step("Page heading is 'Checkout: Overview'", async () => {
+        await expect(checkoutPage.heading).toHaveText('Checkout: Overview');
+      });
 
       const subtotal = await checkoutPage.getSubtotal();
       const tax = await checkoutPage.getTax();
       const total = await checkoutPage.getTotal();
 
-      expect(subtotal).toBeCloseTo(cartSubtotal, 2);
-      expect(tax).toBeGreaterThan(0);
-      expect(total).toBeCloseTo(subtotal + tax, 2);
+      await test.step('Subtotal matches cart total', async () => {
+        expect(subtotal).toBeCloseTo(cartSubtotal, 2);
+      });
+      await test.step('Tax is calculated', async () => {
+        expect(tax).toBeGreaterThan(0);
+      });
+      await test.step('Total equals subtotal plus tax', async () => {
+        expect(total).toBeCloseTo(subtotal + tax, 2);
+      });
     });
   });
 
@@ -67,8 +82,12 @@ test.describe('Checkout Processing', () => {
     });
 
     test('completes full order successfully', async ({ checkoutPage }) => {
-      await expect(checkoutPage.heading).toHaveText('Checkout: Complete!');
-      await expect(checkoutPage.completeHeader).toHaveText('Thank you for your order!');
+      await test.step("Page heading is 'Checkout: Complete!'", async () => {
+        await expect(checkoutPage.heading).toHaveText('Checkout: Complete!');
+      });
+      await test.step("Order confirmation message is shown", async () => {
+        await expect(checkoutPage.completeHeader).toHaveText('Thank you for your order!');
+      });
     });
   });
 });
@@ -79,9 +98,10 @@ test.describe('Checkout Form Validation', () => {
     await inventoryPage.addProductToCart(CART_ITEMS[0]);
     await cartPage.goto();
     await cartPage.proceedToCheckout();
-    await expect(checkoutPage.heading).toHaveText('Checkout: Your Information');
+    await test.step('Checkout form is displayed', async () => {
+      await expect(checkoutPage.heading).toHaveText('Checkout: Your Information');
+    });
   });
-
 
   for (const { key, label } of REQUIRED_FIELDS) {
     test(`shows error when ${label} is missing`, async ({ checkoutPage }) => {
@@ -89,8 +109,12 @@ test.describe('Checkout Form Validation', () => {
 
       await checkoutPage.submitCustomerInfo(invalidCustomer);
 
-      await expect(checkoutPage.heading).toHaveText('Checkout: Your Information');
-      await expect(checkoutPage.errorMessage).toHaveText(`Error: ${label} is required`);
+      await test.step('Stays on checkout form', async () => {
+        await expect(checkoutPage.heading).toHaveText('Checkout: Your Information');
+      });
+      await test.step(`Shows error: '${label} is required'`, async () => {
+        await expect(checkoutPage.errorMessage).toHaveText(`Error: ${label} is required`);
+      });
     });
   }
 });
